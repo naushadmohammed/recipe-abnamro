@@ -33,6 +33,14 @@
             <groupId>org.springframework.boot</groupId>
         </dependency>
         <dependency>
+            <artifactId>spring-boot-starter-flyway</artifactId>
+            <groupId>org.springframework.boot</groupId>
+        </dependency>
+        <dependency>
+            <artifactId>flyway-database-postgresql</artifactId>
+            <groupId>org.flywaydb</groupId>
+        </dependency>
+        <dependency>
             <artifactId>lombok</artifactId>
             <groupId>org.projectlombok</groupId>
             <optional>true</optional>
