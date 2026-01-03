@@ -3,14 +3,20 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <artifactId>recipe</artifactId>
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <groupId>org.springframework.boot</groupId>
-            </plugin>
-        </plugins>
-    </build>
+    <description>Recipe application</description>
+    <groupId>com.abnamro</groupId>
+    <modelVersion>4.0.0</modelVersion>
+    <name>recipe</name>
+    <parent>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <groupId>org.springframework.boot</groupId>
+        <relativePath/>
+        <version>4.0.1</version> <!-- lookup parent from repository -->
+    </parent>
+    <properties>
+        <java.version>25</java.version>
+    </properties>
+    <version>0.0.1-SNAPSHOT</version>
     <dependencies>
         <dependency>
             <artifactId>spring-boot-starter-actuator</artifactId>
@@ -55,14 +61,12 @@
             <artifactId>jjwt-api</artifactId>
             <version>0.13.0</version>
         </dependency>
-
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-impl</artifactId>
             <version>0.13.0</version>
             <scope>runtime</scope>
         </dependency>
-
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-jackson</artifactId>
@@ -110,33 +114,34 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    <description>Demo project for Spring Boot</description>
-    <developers>
-        <developer/>
-    </developers>
-    <groupId>com.abnamro</groupId>
-    <licenses>
-        <license/>
-    </licenses>
-    <modelVersion>4.0.0</modelVersion>
-    <name>recipe</name>
-    <parent>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <groupId>org.springframework.boot</groupId>
-        <relativePath/>
-        <version>4.0.1</version> <!-- lookup parent from repository -->
-    </parent>
-    <properties>
-        <java.version>25</java.version>
-    </properties>
-    <scm>
-        <connection/>
-        <developerConnection/>
-        <tag/>
-        <url/>
-    </scm>
-    <url/>
 
-    <version>0.0.1-SNAPSHOT</version>
-
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <groupId>org.springframework.boot</groupId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
