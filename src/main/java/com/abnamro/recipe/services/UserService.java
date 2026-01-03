@@ -5,6 +5,8 @@ import com.abnamro.recipe.entities.User;
 import com.abnamro.recipe.errors.ApplicationException;
 import com.abnamro.recipe.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +18,8 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JWTService jwtService;
 
     public void createUser(UserDto user) {
         if (userRepository.existsByUsername(user.username())) {
@@ -25,5 +29,10 @@ public class UserService {
         var userEntity = User.builder().username(user.username())
                 .password(passwordEncoder.encode(user.password())).build();
         userRepository.save(userEntity);
+    }
+
+    public String loginUser(UserDto user) {
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.username(), user.password()));
+        return jwtService.generateToken(user.username());
     }
 }

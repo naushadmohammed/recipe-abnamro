@@ -2,6 +2,7 @@ package com.abnamro.recipe.errors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -15,6 +16,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleRecipeException(ApplicationException ex) {
         var error = new ErrorResponse(ex.getStatus().value(), List.of(ex.getMessage()));
         return ResponseEntity.status(ex.getStatus()).body(error);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex) {
+        var error = new ErrorResponse(HttpStatus.UNAUTHORIZED.value(),
+                List.of("Authentication failed: " + ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
