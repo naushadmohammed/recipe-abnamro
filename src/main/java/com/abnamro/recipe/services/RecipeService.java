@@ -5,6 +5,8 @@ import com.abnamro.recipe.dtos.RecipeDto;
 import com.abnamro.recipe.mappers.RecipeMapper;
 import com.abnamro.recipe.repositories.RecipeRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,5 +34,10 @@ public class RecipeService {
         var createdRecipe = recipeRepository.save(recipeEntity);
 
         return recipeMapper.toDto(createdRecipe);
+    }
+
+    public Page<RecipeDto> getRecipes(String username, Pageable pageable) {
+        return recipeRepository.findByCreatedByUsername(username, pageable)
+                .map(recipeMapper::toDto);
     }
 }

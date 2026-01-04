@@ -10,6 +10,10 @@ public class TestUtil {
         return new UserDto("user1", "user1Passowrd");
     }
 
+    public static UserDto getUser2() {
+        return new UserDto("user2", "user2Passowrd");
+    }
+
     public static CreateOrUpdateRecipe getValidRecipe() {
         return new CreateOrUpdateRecipe(
                 "Chicken Tikka",

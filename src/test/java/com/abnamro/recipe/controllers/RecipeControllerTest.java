@@ -17,7 +17,9 @@ import tools.jackson.databind.ObjectMapper;
 
 import static com.abnamro.recipe.utils.TestUtil.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -35,18 +37,25 @@ public class RecipeControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private static String authToken;
+    private static String authTokenUser1;
+    private static String authTokenUser2;
 
     @BeforeAll
     static void setUp(@Autowired UserService userService) {
-        var user = getUser1();
-        userService.createUser(user);
-        authToken = userService.loginUser(user);
+        var user1 = getUser1();
+        userService.createUser(user1);
+        authTokenUser1 = userService.loginUser(user1);
+
+        var user2 = getUser2();
+        userService.createUser(user2);
+        authTokenUser2 = userService.loginUser(user2);
+
     }
 
     @BeforeEach
     void setUp() {
         recipeRepository.deleteAll();
+
     }
 
     @Test
@@ -55,7 +64,7 @@ public class RecipeControllerTest {
         var recipe = getValidRecipe();
 
         mockMvc.perform(post("/recipe")
-                        .header("Authorization", "Bearer " + authToken)
+                        .header("Authorization", "Bearer " + authTokenUser1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(recipe)))
                 .andExpect(status().isCreated());
@@ -104,7 +113,7 @@ public class RecipeControllerTest {
         var recipe = getInvalidRecipe();
 
         mockMvc.perform(post("/recipe")
-                        .header("Authorization", "Bearer " + authToken)
+                        .header("Authorization", "Bearer " + authTokenUser1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(recipe)))
                 .andExpect(status().isBadRequest());
@@ -116,7 +125,7 @@ public class RecipeControllerTest {
         var recipe = getValidRecipeWithouthIngredientsAndInstructions();
 
         mockMvc.perform(post("/recipe")
-                        .header("Authorization", "Bearer " + authToken)
+                        .header("Authorization", "Bearer " + authTokenUser1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(recipe)))
                 .andExpect(status().isCreated());
@@ -130,6 +139,68 @@ public class RecipeControllerTest {
         assertThat(createdRecipe.getIngredients()).isNull();
         assertThat(createdRecipe.getInstructions()).isNull();
 
+    }
+
+    @Test
+    void getRecipes_should_only_return_recipes_for_logged_in_user() throws Exception {
+        var recipe1 = getValidRecipe();
+        mockMvc.perform(post("/recipe")
+                        .header("Authorization", "Bearer " + authTokenUser1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(recipe1)))
+                .andExpect(status().isCreated());
+
+        var recipe2 = getValidRecipeWithouthIngredientsAndInstructions();
+        mockMvc.perform(post("/recipe")
+                        .header("Authorization", "Bearer " + authTokenUser1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(recipe2)))
+                .andExpect(status().isCreated());
+
+        var recipe3 = getValidRecipe();
+        mockMvc.perform(post("/recipe")
+                        .header("Authorization", "Bearer " + authTokenUser2)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(recipe3)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/recipe")
+                        .header("Authorization", "Bearer " + authTokenUser1))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content.length()").value(2));
+    }
+
+    @Test
+    void getRecipes_should_return_pageable_recipes() throws Exception {
+        var recipe1 = getValidRecipe();
+        mockMvc.perform(post("/recipe")
+                        .header("Authorization", "Bearer " + authTokenUser1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(recipe1)))
+                .andExpect(status().isCreated());
+
+        var recipe2 = getValidRecipeWithouthIngredientsAndInstructions();
+        mockMvc.perform(post("/recipe")
+                        .header("Authorization", "Bearer " + authTokenUser1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(recipe2)))
+                .andExpect(status().isCreated());
+
+        var recipe3 = getValidRecipe();
+        mockMvc.perform(post("/recipe")
+                        .header("Authorization", "Bearer " + authTokenUser1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(recipe3)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/recipe?page=0&size=2")
+                        .header("Authorization", "Bearer " + authTokenUser1))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.page.size").value(2))
+                .andExpect(jsonPath("$.page.totalPages").value(2))
+                .andExpect(jsonPath("$.page.totalElements").value(3));
     }
 
 }

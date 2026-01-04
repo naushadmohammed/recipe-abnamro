@@ -5,16 +5,27 @@ import com.abnamro.recipe.dtos.RecipeDto;
 import com.abnamro.recipe.services.RecipeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import static org.springframework.data.domain.Sort.Direction.DESC;
 
 @RestController
 @RequestMapping("recipe")
 @RequiredArgsConstructor
 public class RecipeController {
     private final RecipeService recipeService;
+
+    @GetMapping
+    public Page<RecipeDto> getRecipes(@AuthenticationPrincipal UserDetails userDetails,
+                                      @PageableDefault(sort = "createdAt", direction = DESC) Pageable pageable) {
+        return recipeService.getRecipes(userDetails.getUsername(), pageable);
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
