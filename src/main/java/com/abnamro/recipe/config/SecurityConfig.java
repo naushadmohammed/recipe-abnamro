@@ -1,5 +1,6 @@
 package com.abnamro.recipe.config;
 
+import com.abnamro.recipe.security.JwtFilter;
 import com.abnamro.recipe.services.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

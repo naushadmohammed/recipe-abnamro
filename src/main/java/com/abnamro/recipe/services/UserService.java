@@ -4,7 +4,9 @@ import com.abnamro.recipe.dtos.UserDto;
 import com.abnamro.recipe.entities.User;
 import com.abnamro.recipe.errors.ApplicationException;
 import com.abnamro.recipe.repositories.UserRepository;
+import com.abnamro.recipe.security.JWTService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -35,4 +37,10 @@ public class UserService {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.username(), user.password()));
         return jwtService.generateToken(user.username());
     }
+
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new ApplicationException(HttpStatus.UNAUTHORIZED, "User not found"));
+    }
+
 }

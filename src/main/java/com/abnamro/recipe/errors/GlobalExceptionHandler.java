@@ -2,6 +2,7 @@ package com.abnamro.recipe.errors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -31,6 +32,13 @@ public class GlobalExceptionHandler {
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .toList();
         var error = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), messages);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleValidationException(HttpMessageNotReadableException ex) {
+        var error = new ErrorResponse(HttpStatus.BAD_REQUEST.value(),
+                List.of("Malformed Request, Please check your request format"));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 

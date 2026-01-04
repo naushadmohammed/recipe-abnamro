@@ -1,4 +1,4 @@
-package com.abnamro.recipe.services;
+package com.abnamro.recipe.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

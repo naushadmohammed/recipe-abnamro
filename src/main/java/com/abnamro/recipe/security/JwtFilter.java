@@ -1,6 +1,5 @@
-package com.abnamro.recipe.config;
+package com.abnamro.recipe.security;
 
-import com.abnamro.recipe.services.JWTService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
