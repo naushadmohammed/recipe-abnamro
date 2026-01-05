@@ -31,3 +31,12 @@ logging:
     org.springframework: DEBUG
     org.hibernate.orm.jdbc.bind: TRACE
     com.abnamro.recipe: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never

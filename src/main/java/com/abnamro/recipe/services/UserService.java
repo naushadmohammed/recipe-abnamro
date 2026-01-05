@@ -25,7 +25,7 @@ public class UserService {
 
     public void createUser(UserDto user) {
         if (userRepository.existsByUsername(user.username())) {
-            throw new ApplicationException("Username already exists");
+            throw new ApplicationException(HttpStatus.CONFLICT, "Username already exists");
         }
 
         var userEntity = User.builder().username(user.username())
