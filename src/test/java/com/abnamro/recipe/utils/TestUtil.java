@@ -14,6 +14,28 @@ public class TestUtil {
         return new UserDto("user2", "user2Passowrd");
     }
 
+    public static CreateOrUpdateRecipe getVegPastaRecipe() {
+        return new CreateOrUpdateRecipe(
+                "Veg Pasta",
+                "Veg Pasta with parmesaan cheese",
+                6,
+                RecipeType.VEGETARIAN,
+                getPastaIngedient(),
+                getPastaInstructions()
+        );
+    }
+
+    public static CreateOrUpdateRecipe getPaneeraRecipe() {
+        return new CreateOrUpdateRecipe(
+                "Veg Paneer",
+                "Veg Paneer tikka",
+                6,
+                RecipeType.VEGETARIAN,
+                getPaneerIngedient(),
+                getPaneerInstructions()
+        );
+    }
+
     public static CreateOrUpdateRecipe getValidRecipe() {
         return new CreateOrUpdateRecipe(
                 "Chicken Tikka",
@@ -56,9 +78,41 @@ public class TestUtil {
     }
 
     public static List<CreateOrUpdateInstruction> getChickenTikkaInstructions(){
-        var cutChicken = new CreateOrUpdateInstruction("Cut chicken");
+        var cutChicken = new CreateOrUpdateInstruction("Cut chicken and Boil");
         var fry = new CreateOrUpdateInstruction("Fry onion, garlic and ginger");
         var addChicken = new CreateOrUpdateInstruction("Add chicken");
         return List.of(cutChicken, fry, addChicken);
+    }
+
+    public static List<CreateOrUpdateIngredient> getPastaIngedient(){
+        var pasta = new CreateOrUpdateIngredient("Pasta", 1, "kg");
+        var onion = new CreateOrUpdateIngredient("Onion", 1, "kg");
+        var garlic = new CreateOrUpdateIngredient("Garlic", 100, "gram");
+        var cheese = new CreateOrUpdateIngredient("Cheese", 100, "gram");
+        var tomato = new CreateOrUpdateIngredient("Tomato", 1, "kg");
+        return List.of(pasta, onion, garlic, cheese, tomato);
+    }
+
+    public static List<CreateOrUpdateInstruction> getPastaInstructions(){
+        var boilPasta = new CreateOrUpdateInstruction("Boil pasta");
+        var fry = new CreateOrUpdateInstruction("Fry onion, garlic, cheese and tomato");
+        var putPasta = new CreateOrUpdateInstruction("Put pasta in the pan");
+        return List.of(boilPasta, fry, putPasta);
+    }
+
+    public static List<CreateOrUpdateIngredient> getPaneerIngedient(){
+        var pasta = new CreateOrUpdateIngredient("Paneer", 1, "kg");
+        var onion = new CreateOrUpdateIngredient("Onion", 1, "kg");
+        var garlic = new CreateOrUpdateIngredient("Garlic", 100, "gram");
+        var tomato = new CreateOrUpdateIngredient("Tomato", 1, "kg");
+        return List.of(pasta, onion, garlic, tomato);
+    }
+
+    public static List<CreateOrUpdateInstruction> getPaneerInstructions(){
+        var cutEverything = new CreateOrUpdateInstruction("Cut onion, pasta, paneer, garlic and tomato");
+        var fry = new CreateOrUpdateInstruction("Fry onion, garlic and tomato");
+        var putPaneer = new CreateOrUpdateInstruction("Put paneer in the pan");
+        var shimmer = new CreateOrUpdateInstruction("Let it Shimmer for 10 minutes");
+        return List.of(cutEverything, fry, putPaneer, shimmer);
     }
 }

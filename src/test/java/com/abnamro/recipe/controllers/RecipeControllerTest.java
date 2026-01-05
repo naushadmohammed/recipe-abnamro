@@ -2,6 +2,7 @@ package com.abnamro.recipe.controllers;
 
 import com.abnamro.recipe.TestcontainersConfiguration;
 import com.abnamro.recipe.dtos.CreateOrUpdateRecipe;
+import com.abnamro.recipe.dtos.SearchRecipe;
 import com.abnamro.recipe.repositories.RecipeRepository;
 import com.abnamro.recipe.services.UserService;
 import org.junit.jupiter.api.BeforeAll;
@@ -15,6 +16,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
+
+import java.util.List;
 
 import static com.abnamro.recipe.utils.TestUtil.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -249,6 +252,73 @@ public class RecipeControllerTest {
         var recipeNotDeleted = recipeRepository.findById(recipeId).orElse(null);
 
         assertThat(recipeNotDeleted).isNotNull();
+    }
+
+
+    @Test
+    void search_for_veg_recipe_order_by_created_date() throws Exception {
+        var paneeraRecipe = getPaneeraRecipe();
+        createRecipeUsingMockMvc(paneeraRecipe);
+
+        var pastaRecipe = getVegPastaRecipe();
+        createRecipeUsingMockMvc(pastaRecipe);
+
+        var chickenRecipe = getValidRecipe();
+        createRecipeUsingMockMvc(chickenRecipe);
+
+        var searchRequest = new SearchRecipe(true, null, null, null, null);
+
+        mockMvc.perform(post("/recipe/search")
+                        .header("Authorization", "Bearer " + authTokenUser1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(searchRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(2))
+                .andExpect(jsonPath("$.content[0].name").value(pastaRecipe.name()))
+                .andExpect(jsonPath("$.content[1].name").value(paneeraRecipe.name()));
+    }
+
+    @Test
+    void search_for_veg_recipe_which_serves_6_and_contains_paneer() throws Exception {
+        var paneeraRecipe = getPaneeraRecipe();
+        createRecipeUsingMockMvc(paneeraRecipe);
+
+        var pastaRecipe = getVegPastaRecipe();
+        createRecipeUsingMockMvc(pastaRecipe);
+
+        var searchRequest = new SearchRecipe(true, 6, List.of("Paneer"), null, null);
+
+        mockMvc.perform(post("/recipe/search")
+                        .header("Authorization", "Bearer " + authTokenUser1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(searchRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].name").value(paneeraRecipe.name()));
+    }
+
+    @Test
+    void search_for_recipe_which_doesnt_contain_paneer_has_boil_instructions() throws Exception {
+        var paneeraRecipe = getPaneeraRecipe();
+        createRecipeUsingMockMvc(paneeraRecipe);
+
+        var pastaRecipe = getVegPastaRecipe();
+        createRecipeUsingMockMvc(pastaRecipe);
+
+        var chickenRecipe = getValidRecipe();
+        createRecipeUsingMockMvc(chickenRecipe);
+
+        var searchRequest = new SearchRecipe(null, null, null, List.of("Paneer"), "Boil");
+
+        mockMvc.perform(post("/recipe/search")
+                        .header("Authorization", "Bearer " + authTokenUser1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(searchRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(2))
+                .andExpect(jsonPath("$.content[0].name").value(chickenRecipe.name()))
+                .andExpect(jsonPath("$.content[1].name").value(pastaRecipe.name()));
+
     }
 
 

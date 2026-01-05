@@ -2,9 +2,11 @@ package com.abnamro.recipe.services;
 
 import com.abnamro.recipe.dtos.CreateOrUpdateRecipe;
 import com.abnamro.recipe.dtos.RecipeDto;
+import com.abnamro.recipe.dtos.SearchRecipe;
 import com.abnamro.recipe.errors.ApplicationException;
 import com.abnamro.recipe.mappers.RecipeMapper;
 import com.abnamro.recipe.repositories.RecipeRepository;
+import com.abnamro.recipe.utils.RecipeSearchBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -60,5 +62,13 @@ public class RecipeService {
     public void deleteRecipe(UUID recipeId, String username) {
 
         recipeRepository.deleteById(recipeId);
+    }
+
+    public Page<RecipeDto> searchRecipes(SearchRecipe searchRecipe, Pageable pageable) {
+
+        var searchQuery = RecipeSearchBuilder.buildSearchQuery(searchRecipe);
+
+        return recipeRepository.findAll(searchQuery, pageable)
+                .map(recipeMapper::toDto);
     }
 }

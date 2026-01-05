@@ -2,11 +2,13 @@ package com.abnamro.recipe.controllers;
 
 import com.abnamro.recipe.dtos.CreateOrUpdateRecipe;
 import com.abnamro.recipe.dtos.RecipeDto;
+import com.abnamro.recipe.dtos.SearchRecipe;
 import com.abnamro.recipe.services.RecipeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -49,6 +51,12 @@ public class RecipeController {
                              @AuthenticationPrincipal UserDetails userDetails) {
         recipeService.deleteRecipe(recipeId, userDetails.getUsername());
 
+    }
+
+    @PostMapping("/search")
+    public Page<RecipeDto> searchRecipes(@Valid @RequestBody SearchRecipe searchRecipe,
+                                         @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return recipeService.searchRecipes(searchRecipe, pageable);
     }
 
 }
