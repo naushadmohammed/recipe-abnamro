@@ -31,4 +31,7 @@ public interface RecipeMapper {
             });
         }
     }
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateEntityFromDto(CreateOrUpdateRecipe dto, @MappingTarget Recipe entity);
 }

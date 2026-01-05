@@ -13,6 +13,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
 @RestController
@@ -32,6 +34,21 @@ public class RecipeController {
     public RecipeDto createRecipe(@Valid @RequestBody CreateOrUpdateRecipe recipe,
                                   @AuthenticationPrincipal UserDetails userDetails) {
         return recipeService.createRecipe(recipe, userDetails.getUsername());
+    }
+
+    @PutMapping("/{recipeId}")
+    public RecipeDto updateRecipe(@PathVariable UUID recipeId,
+                                  @Valid @RequestBody CreateOrUpdateRecipe recipe,
+                                  @AuthenticationPrincipal UserDetails userDetails) {
+        return recipeService.updateRecipe(recipeId, recipe, userDetails.getUsername());
+    }
+
+    @DeleteMapping("/{recipeId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteRecipe(@PathVariable UUID recipeId,
+                             @AuthenticationPrincipal UserDetails userDetails) {
+        recipeService.deleteRecipe(recipeId, userDetails.getUsername());
+
     }
 
 }

@@ -1,6 +1,7 @@
 package com.abnamro.recipe.controllers;
 
 import com.abnamro.recipe.TestcontainersConfiguration;
+import com.abnamro.recipe.dtos.CreateOrUpdateRecipe;
 import com.abnamro.recipe.repositories.RecipeRepository;
 import com.abnamro.recipe.services.UserService;
 import org.junit.jupiter.api.BeforeAll;
@@ -17,8 +18,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import static com.abnamro.recipe.utils.TestUtil.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -63,11 +63,7 @@ public class RecipeControllerTest {
     void create_recipe_work_for_authenticated_user() throws Exception {
         var recipe = getValidRecipe();
 
-        mockMvc.perform(post("/recipe")
-                        .header("Authorization", "Bearer " + authTokenUser1)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(recipe)))
-                .andExpect(status().isCreated());
+        createRecipeUsingMockMvc(recipe);
 
         var createdRecipe = recipeRepository.findAll().getFirst();
         assertThat(createdRecipe.getName()).isEqualTo(recipe.name());
@@ -124,11 +120,7 @@ public class RecipeControllerTest {
     void create_recipe_works_without_ingredients_and_instructions() throws Exception {
         var recipe = getValidRecipeWithouthIngredientsAndInstructions();
 
-        mockMvc.perform(post("/recipe")
-                        .header("Authorization", "Bearer " + authTokenUser1)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(recipe)))
-                .andExpect(status().isCreated());
+        createRecipeUsingMockMvc(recipe);
 
         var createdRecipe = recipeRepository.findAll().getFirst();
         assertThat(createdRecipe.getName()).isEqualTo(recipe.name());
@@ -144,18 +136,10 @@ public class RecipeControllerTest {
     @Test
     void getRecipes_should_only_return_recipes_for_logged_in_user() throws Exception {
         var recipe1 = getValidRecipe();
-        mockMvc.perform(post("/recipe")
-                        .header("Authorization", "Bearer " + authTokenUser1)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(recipe1)))
-                .andExpect(status().isCreated());
+        createRecipeUsingMockMvc(recipe1);
 
         var recipe2 = getValidRecipeWithouthIngredientsAndInstructions();
-        mockMvc.perform(post("/recipe")
-                        .header("Authorization", "Bearer " + authTokenUser1)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(recipe2)))
-                .andExpect(status().isCreated());
+        createRecipeUsingMockMvc(recipe2);
 
         var recipe3 = getValidRecipe();
         mockMvc.perform(post("/recipe")
@@ -174,25 +158,13 @@ public class RecipeControllerTest {
     @Test
     void getRecipes_should_return_pageable_recipes() throws Exception {
         var recipe1 = getValidRecipe();
-        mockMvc.perform(post("/recipe")
-                        .header("Authorization", "Bearer " + authTokenUser1)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(recipe1)))
-                .andExpect(status().isCreated());
+        createRecipeUsingMockMvc(recipe1);
 
         var recipe2 = getValidRecipeWithouthIngredientsAndInstructions();
-        mockMvc.perform(post("/recipe")
-                        .header("Authorization", "Bearer " + authTokenUser1)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(recipe2)))
-                .andExpect(status().isCreated());
+        createRecipeUsingMockMvc(recipe2);
 
         var recipe3 = getValidRecipe();
-        mockMvc.perform(post("/recipe")
-                        .header("Authorization", "Bearer " + authTokenUser1)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(recipe3)))
-                .andExpect(status().isCreated());
+        createRecipeUsingMockMvc(recipe3);
 
         mockMvc.perform(get("/recipe?page=0&size=2")
                         .header("Authorization", "Bearer " + authTokenUser1))
@@ -203,4 +175,88 @@ public class RecipeControllerTest {
                 .andExpect(jsonPath("$.page.totalElements").value(3));
     }
 
+    @Test
+    void update_own_recipe_successfully() throws Exception {
+        var recipe = getValidRecipe();
+        createRecipeUsingMockMvc(recipe);
+
+        var createdRecipe = recipeRepository.findAll().getFirst();
+        var recipeId = createdRecipe.getId();
+
+        var recipe2 = getValidRecipeWithouthIngredientsAndInstructions();
+        mockMvc.perform(put("/recipe/{recipeId}", recipeId)
+                        .header("Authorization", "Bearer " + authTokenUser1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(recipe2)))
+                .andExpect(status().isOk());
+        var updatedRecipe = recipeRepository.findById(recipeId).orElseThrow();
+        assertThat(updatedRecipe.getName()).isEqualTo(recipe2.name());
+        assertThat(updatedRecipe.getDescription()).isEqualTo(recipe2.description());
+        assertThat(updatedRecipe.getServings()).isEqualTo(recipe2.servings());
+        assertThat(updatedRecipe.getType()).isEqualTo(recipe2.type());
+        assertThat(updatedRecipe.getCreatedBy().getUsername()).isEqualTo(getUser1().username());
+    }
+
+    @Test
+    void updating_others_recipe_should_fail() throws Exception {
+        var recipe = getValidRecipe();
+        createRecipeUsingMockMvc(recipe);
+
+        var createdRecipe = recipeRepository.findAll().getFirst();
+        var recipeId = createdRecipe.getId();
+
+        var recipe2 = getValidRecipeWithouthIngredientsAndInstructions();
+        mockMvc.perform(put("/recipe/{recipeId}", recipeId)
+                        .header("Authorization", "Bearer " + authTokenUser2)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(recipe2)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void delete_own_recipe_successfully() throws Exception {
+        var recipe = getValidRecipe();
+        createRecipeUsingMockMvc(recipe);
+
+        var createdRecipe = recipeRepository.findAll().getFirst();
+        var recipeId = createdRecipe.getId();
+
+        var recipe2 = getValidRecipeWithouthIngredientsAndInstructions();
+        mockMvc.perform(delete("/recipe/{recipeId}", recipeId)
+                        .header("Authorization", "Bearer " + authTokenUser1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(recipe2)))
+                .andExpect(status().isNoContent());
+        var deletedRecipe = recipeRepository.findById(recipeId).orElse(null);
+
+        assertThat(deletedRecipe).isNull();
+    }
+
+    @Test
+    void deleting_others_recipe_should_fail() throws Exception {
+        var recipe = getValidRecipe();
+        createRecipeUsingMockMvc(recipe);
+
+        var createdRecipe = recipeRepository.findAll().getFirst();
+        var recipeId = createdRecipe.getId();
+
+        var recipe2 = getValidRecipeWithouthIngredientsAndInstructions();
+        mockMvc.perform(delete("/recipe/{recipeId}", recipeId)
+                        .header("Authorization", "Bearer " + authTokenUser2)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(recipe2)))
+                .andExpect(status().isForbidden());
+        var recipeNotDeleted = recipeRepository.findById(recipeId).orElse(null);
+
+        assertThat(recipeNotDeleted).isNotNull();
+    }
+
+
+    private void createRecipeUsingMockMvc(CreateOrUpdateRecipe recipe) throws Exception {
+        mockMvc.perform(post("/recipe")
+                        .header("Authorization", "Bearer " + authTokenUser1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(recipe)))
+                .andExpect(status().isCreated());
+    }
 }

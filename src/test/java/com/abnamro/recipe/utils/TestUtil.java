@@ -27,9 +27,9 @@ public class TestUtil {
 
     public static CreateOrUpdateRecipe getValidRecipeWithouthIngredientsAndInstructions() {
         return new CreateOrUpdateRecipe(
-                "Chicken Tikka",
-                "Chicken Tikka Masala",
-                4,
+                "Chicken Tikka Gravy",
+                "Chicken Tikka Masala with gravy",
+                5,
                 RecipeType.NON_VEGETARIAN,
                 null,null
         );
